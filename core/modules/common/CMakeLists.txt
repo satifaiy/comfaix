@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.18)
+project(common LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(TARGET ${PROJECT_NAME})
+
+add_library(${TARGET} INTERFACE)
+
+target_include_directories(${TARGET} INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cpp>
+    $<INSTALL_INTERFACE:include/common>
+)

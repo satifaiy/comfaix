@@ -1,5 +1,12 @@
 # ******************* OpenCV ********************
 
+FetchContent_Declare(
+    opencv_contrib
+    GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
+    GIT_TAG        4.12.0
+)
+FetchContent_MakeAvailable(opencv_contrib)
+
 set(OPENCV_DIR ${DEPENDENCIES_OUT_DIR}/opencv)
 set(OPENCV_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/opencv-prefix/src/opencv-build-${DEPENDENCIES_BUILD_SUFFIX})
 
@@ -15,6 +22,27 @@ ExternalProject_Add(
   BUILD_COMMAND     ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG> -- -j4
   CMAKE_ARGS
     --fresh
+    -DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_SOURCE_DIR}/modules
+        -DBUILD_EXAMPLES=OFF
+        -DBUILD_opencv_julia=OFF
+        -DBUILD_opencv_matlab=OFF
+        -DBUILD_opencv_mcc=OFF
+        -DBUILD_opencv_optflow=OFF
+        -DBUILD_opencv_ovis=OFF
+        -DBUILD_opencv_phase_unwrapping=OFF
+        -DBUILD_opencv_plot=OFF
+        -DBUILD_opencv_rapid=OFF
+        -DBUILD_opencv_reg=OFF
+        -DBUILD_opencv_rgbd=OFF
+        -DBUILD_opencv_saliency=OFF
+        -DBUILD_opencv_signal=OFF
+        -DBUILD_opencv_structured_light=OFF
+        -DBUILD_opencv_viz=OFF
+        -DBUILD_opencv_wechat_qrcode=OFF
+        -DBUILD_opencv_xphoto=OFF
+        -DBUILD_opencv_fuzzy=OFF
+        -DBUILD_opencv_freetype=OFF
+        -DBUILD_opencv_cvv=OFF
     -DBUILD_SHARED_LIBS=${BUILD_DEP_SHARE}
     -DBUILD_EXAMPLES=OFF
     -DBUILD_TESTS=OFF

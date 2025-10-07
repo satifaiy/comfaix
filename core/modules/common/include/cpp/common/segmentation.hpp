@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 
 // @brief a common data type

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(ocr C CXX)
+project(modules C CXX)
 
 set(TARGET ${PROJECT_NAME})
 

@@ -9,6 +9,7 @@ add_executable(${TARGET}
     image/chain_test.cpp
     image/permute_op_test.cpp
     image/resize_op_test.cpp
+    image/segment_op_test.cpp
 )
 
 # Link the test executable to the library and Google Test

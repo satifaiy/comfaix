@@ -1,12 +1,17 @@
+#include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
+#include "common/ovs_assert.hpp"
+#include "pipeline/image/score.hpp"
 #include "pipeline/image/segment_op.hpp"
 
 namespace pipeline::image::op {
 
 // @brief segmentation using Differentiable Binarization
 std::vector<common::Result<cv::Mat, std::vector<cv::Point2f>>>
-db_segmentation(cv::Mat &bitmap, const DBNetConfig &config,
+db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
                 const cv::Size2f ratio, const cv::Mat &in_predict) {
   // if no prediction given then fallback to bitmap
   cv::Mat predict = in_predict;
@@ -15,21 +20,24 @@ db_segmentation(cv::Mat &bitmap, const DBNetConfig &config,
   }
 
   cv::Mat threshold;
-  cv::threshold(bitmap, threshold, config.thresh * 255, 255, cv::THRESH_BINARY);
+  if (bitmap.type() != CV_8UC1) {
+    cv::cvtColor(bitmap, threshold, cv::COLOR_BGR2GRAY);
+    OVS_ASSERT(threshold.type() == CV_8UC1, "expect type ", CV_8UC1,
+               " but got ", threshold.type());
+  }
+  cv::threshold(threshold, threshold, config.thresh * 255, 255,
+                cv::THRESH_BINARY);
 
   std::vector<std::vector<cv::Point>> contours;
-  if (bitmap.type() != CV_8UC1) {
-    bitmap.convertTo(bitmap, CV_8UC1);
-  }
-  cv::findContours(bitmap, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+  cv::findContours(threshold, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
-  size_t numCandidate = std::min(
+  size_t num_candidate = std::min(
       contours.size(),
       (size_t)(config.max_candidates > 0 ? config.max_candidates : INT_MAX));
 
   std::vector<common::Result<cv::Mat, std::vector<cv::Point2f>>> results;
 
-  for (size_t i = 0; i < numCandidate; i++) {
+  for (size_t i = 0; i < num_candidate; i++) {
     std::vector<cv::Point> &contour = contours[i];
 
     float score = contour_score(predict, contour);
@@ -44,7 +52,7 @@ db_segmentation(cv::Mat &bitmap, const DBNetConfig &config,
     }
 
     // Unclip
-    cv::RotatedRect box = minAreaRect(contourScaled);
+    cv::RotatedRect box = cv::minAreaRect(contourScaled);
     float minLen =
         std::min(box.size.height / ratio.width, box.size.width / ratio.height);
 
@@ -61,6 +69,7 @@ db_segmentation(cv::Mat &bitmap, const DBNetConfig &config,
     else if (std::fabs(box.angle) >=
              angle_threshold) // don't work with vertical rectangles
       swap_size = true;
+
     if (swap_size) {
       std::swap(box.size.width, box.size.height);
       if (box.angle < 0)
@@ -78,9 +87,9 @@ db_segmentation(cv::Mat &bitmap, const DBNetConfig &config,
     unclip(approx, polygon, config.unclip_ratio);
     if (polygon.empty())
       continue;
-    // TODO: crop the bitmap
-    cv::Mat m;
-    results.push_back(common::Result{m, polygon, score});
+
+    cv::Mat cropped = cropper(polygon);
+    results.push_back(common::Result{cropped, polygon, score});
   }
   return results;
 }
@@ -139,4 +148,4 @@ void unclip(const std::vector<cv::Point2f> &inPoly,
   }
 }
 
-} // namespace pipeline::image
+} // namespace pipeline::image::op

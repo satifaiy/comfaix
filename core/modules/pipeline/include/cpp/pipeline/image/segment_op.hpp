@@ -1,11 +1,13 @@
+#pragma once
+
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
 #include <vector>
 
-#include "pipeline/image/score.hpp"
 #include "common/segmentation.hpp"
+#include "pipeline/image/segment_util.hpp"
 
 namespace common = comfaix::common;
 
@@ -26,13 +28,15 @@ struct DBNetConfig {
   double unclip_ratio;
 };
 
+
 // @brief segmentation using Differentiable Binarization
+// @param bitmap must be an BGR color order or a grayscale.
 std::vector<common::Result<cv::Mat, std::vector<cv::Point2f>>>
-db_segmentation(cv::Mat &bitmap, const DBNetConfig &config,
+db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
                 const cv::Size2f ratio, const cv::Mat &in_predict = {});
 
 // @brief transform points by unclip
 void unclip(const std::vector<cv::Point2f> &inPoly,
             std::vector<cv::Point2f> &outPoly, const double unclipRatio);
 
-} // namespace pipeline::image
+} // namespace pipeline::image::op

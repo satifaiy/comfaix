@@ -1,7 +1,8 @@
 FetchContent_Declare(
-    Json
-    GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-    GIT_TAG        v1.1.0
+    simdjson
+    GIT_REPOSITORY https://github.com/simdjson/simdjson.git
+    GIT_TAG        v4.0.7
+    GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(Json)
+FetchContent_MakeAvailable(simdjson)

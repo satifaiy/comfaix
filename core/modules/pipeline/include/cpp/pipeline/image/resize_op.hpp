@@ -25,7 +25,7 @@ inline cv::Mat resize_fit_width(cv::Mat &m, int width,
   return resized;
 }
 
-inline cv::Mat resize_fit_height(cv::Mat &m, int height,
+inline cv::Mat resize_fit_height(const cv::Mat &m, int height,
                                  cv::InterpolationFlags flags) {
   auto ratio = 1.0f * m.cols / m.rows;
   cv::Mat resized;
@@ -34,7 +34,7 @@ inline cv::Mat resize_fit_height(cv::Mat &m, int height,
 }
 
 // @brief resize the image to fit grid of multiple block.
-inline cv::Mat resize_n_mutiply(cv::Mat &m, cv::Size max, cv::Size block,
+inline cv::Mat resize_n_mutiply(const cv::Mat &m, cv::Size max, cv::Size block,
                                 cv::Size2f &ratio,
                                 cv::InterpolationFlags flags) {
   OVS_ASSERT(!block.empty(), "block grid must not be empty");
@@ -46,7 +46,7 @@ inline cv::Mat resize_n_mutiply(cv::Mat &m, cv::Size max, cv::Size block,
   cv::Mat resized;
   cv::Size size(m.cols, m.rows);
   if (size.width > size.height) {
-    if (size.width > max.width) {
+    if (max.width > 0 && size.width > max.width) {
       // limit maximum width
       size.height = (size.height * max.width) / size.width;
       size.width = max.width;
@@ -56,7 +56,7 @@ inline cv::Mat resize_n_mutiply(cv::Mat &m, cv::Size max, cv::Size block,
       }
     }
   } else {
-    if (size.height > max.height) {
+    if (max.height > 0 && size.height > max.height) {
       // limit maximum width
       size.width = (size.width * max.height) / size.height;
       size.height = max.height;
@@ -66,12 +66,14 @@ inline cv::Mat resize_n_mutiply(cv::Mat &m, cv::Size max, cv::Size block,
       }
     }
   }
+
   // aligment to grid block
   size.width = std::max(
       int(round(float(size.width) / block.width) * block.width), block.width);
   size.height =
       std::max(int(round(float(size.height) / block.height) * block.height),
                block.height);
+
   cv::resize(m, resized, size);
   ratio.width = float(size.width) / m.cols;
   ratio.height = float(size.height) / m.rows;

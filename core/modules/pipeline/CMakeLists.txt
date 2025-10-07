@@ -11,6 +11,7 @@ set(TARGET ${PROJECT_NAME})
 add_library(${TARGET} OBJECT
     src/cpp/image/score.cpp
     src/cpp/image/segment_op.cpp
+    src/cpp/image/segment_util.cpp
 )
 
 target_link_libraries(${TARGET} PUBLIC

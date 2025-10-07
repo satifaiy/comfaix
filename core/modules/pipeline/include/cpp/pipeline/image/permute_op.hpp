@@ -1,4 +1,4 @@
-#pragma one
+#pragma once
 
 #include <opencv2/core.hpp>
 #include <opencv2/core/base.hpp>
@@ -64,7 +64,7 @@ template <typename T> inline NUMBER<T> *permute_c4(cv::Mat &m, T *data) {
 // @brief flatten the channel
 template <typename T> inline NUMBER<T> *permute(cv::Mat &m, T *data) {
   OVS_ASSERT(0 < m.channels() && m.channels() < 5,
-             "permute support image with 1 to 4 channels only");
+             "permute support image with 1 to 4 channels only, got ", m.channels());
   switch (m.channels()) {
   case 1:
     memcpy(data, (T *)m.data, m.cols * m.rows);

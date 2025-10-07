@@ -1,23 +1,5 @@
 # ******************* OpenVINO ********************
 
-set(ONETBB_DIR ${DEPENDENCIES_OUT_DIR}/oneTBB)
-set(ONETBB_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/oneTBB-prefix/src/oneTBB-build-${DEPENDENCIES_BUILD_SUFFIX})
-
-ExternalProject_Add(
-  oneTBB
-  GIT_REPOSITORY    https://github.com/uxlfoundation/oneTBB.git
-  GIT_TAG           v2022.2.0
-  BUILD_IN_SOURCE   FALSE
-  BINARY_DIR        ${ONETBB_BINARY_DIR}
-  INSTALL_DIR       ${ONETBB_DIR}
-  CMAKE_ARGS
-    --fresh
-    -DTBB_TEST=OFF
-    -DCMAKE_INSTALL_PREFIX=${ONETBB_DIR}
-    -DBUILD_SHARED_LIBS=${BUILD_DEP_SHARE}
-    -DCMAKE_BUILD_TYPE=Release
-)
-
 set(LIBVA_DIR ${DEPENDENCIES_OUT_DIR}/libva)
 set(LIBVA_SHARE     enable-shared)
 set(LIBVA_STATIC    disable-static)
@@ -59,6 +41,16 @@ FetchContent_MakeAvailable(openvino_contrib)
 set(OPENVINO_DIR ${DEPENDENCIES_OUT_DIR}/openvino)
 set(OPENVINO_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/openvino-prefix/src/openvino-build-${DEPENDENCIES_BUILD_SUFFIX})
 
+set(OPENVINO_SRC_BIN ${CMAKE_CURRENT_BINARY_DIR}/openvino-prefix/src/openvino/bin)
+
+# Delete openvino linking cache
+add_custom_target(
+    openvino_clean_bin
+    COMMAND ${CMAKE_COMMAND} -E echo "Deleting stale staging directory: ${OPENVINO_SRC_BIN}"
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${OPENVINO_SRC_BIN}"
+    COMMENT "Cleaning OpenVINO's staging 'bin' folder"
+)
+
 ExternalProject_Add(
   openvino
   GIT_REPOSITORY    https://github.com/openvinotoolkit/openvino.git
@@ -68,6 +60,7 @@ ExternalProject_Add(
   INSTALL_DIR       ${OPENVINO_DIR}
   DEPENDS           oneTBB
                     libva
+                    openvino_clean_bin
   BUILD_COMMAND     ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG> -- -j4
   CMAKE_ARGS
     --fresh

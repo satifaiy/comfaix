@@ -1,9 +1,9 @@
-#include <opencv2/core/types.hpp>
-#pragma one
+#pragma once
 
 #include <opencv2/core.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "common/ovs_assert.hpp"
@@ -52,8 +52,8 @@ inline cv::Mat standard_score_normalize(cv::Mat &m, int type,
                                     {scales[0], scales[1], scales[2]});
   case 4:
     return standard_score_normalize(
-        m, type, {means[0], means[1], means[2], means[4]},
-        {scales[0], scales[1], scales[2], scales[4]});
+        m, type, {means[0], means[1], means[2], means[3]},
+        {scales[0], scales[1], scales[2], scales[3]});
   default:
     throw "support only 1 ot 4 channel image";
   }
@@ -68,7 +68,8 @@ inline cv::Mat standard_score_normalize(cv::Mat &m, int type, cv::Scalar means,
   std::vector<cv::Mat> by_channels(m.channels());
   cv::split(m, by_channels);
   for (int i = 0; i < by_channels.size(); i++) {
-    m.convertTo(by_channels[i], type, 1 / scales[i], -means[i] / scales[i]);
+    by_channels[i].convertTo(by_channels[i], type, 1 / scales[i],
+                             -means[i] / scales[i]);
   }
   cv::merge(by_channels, m);
   return m;

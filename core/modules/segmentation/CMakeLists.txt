@@ -9,24 +9,30 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(TARGET ${PROJECT_NAME})
 
 add_library(${TARGET} OBJECT
-    src/text/paddle/detect.cpp
+    src/cpp/text/paddle/config.cpp
+    src/cpp/text/paddle/detect.cpp
 )
 
-# target_link_libraries(${TARGET} PUBLIC
-#     ${OpenCV_LIBRARIES}
-#     openvino::runtime
-#     pipeline
-# )
+target_link_libraries(${TARGET} PUBLIC
+    ${OpenCV_LIBRARIES}
+    openvino::runtime
+    pipeline
+    simdjson
+)
 
 add_library(${TARGET}_interface INTERFACE)
 
-# target_link_libraries(${TARGET}_interface INTERFACE
-#     ${OpenCV_LIBRARIES}
-#     openvino::runtime
-#     pipeline
-# )
+target_link_libraries(${TARGET}_interface INTERFACE
+    ${OpenCV_LIBRARIES}
+    openvino::runtime
+    pipeline
+    simdjson
+)
 
 target_include_directories(${TARGET} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/c
 )
+
+if (COMFAIX_SELF_BUILD)
+    add_subdirectory(src/cpp/test)
+endif()

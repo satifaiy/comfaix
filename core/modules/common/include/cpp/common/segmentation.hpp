@@ -1,5 +1,6 @@
 #pragma once
 
+#include <opencv2/core/mat.hpp>
 #include <vector>
 
 // @brief a common data type
@@ -15,6 +16,9 @@ template <typename S, typename R> struct Result {
   // @brief a matching score of the segment.
   float score;
 };
+
+// @brief an image segmentation result
+using ImageSegmentResult = common::Result<cv::Mat, std::vector<cv::Point2f>>;
 
 // @brief abstraction class provide common method to segment an input.
 template <typename S, typename R> class Segmentation {

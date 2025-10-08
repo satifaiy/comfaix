@@ -26,6 +26,7 @@ struct DBNetConfig {
   int max_candidates;
   double box_thresh;
   double unclip_ratio;
+  cv::Size dilate_kernel;
 };
 
 // @brief segmentation using Differentiable Binarization

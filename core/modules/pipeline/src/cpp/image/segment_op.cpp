@@ -30,6 +30,13 @@ db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
   cv::Mat threshold;
   cv::threshold(bitmap, threshold, config.thresh * 255, 255, cv::THRESH_BINARY);
 
+  // dilation increase white spot
+  if (!config.dilate_kernel.empty()) {
+    cv::Mat dila_ele =
+        cv::getStructuringElement(cv::MORPH_RECT, config.dilate_kernel);
+    cv::dilate(threshold, threshold, dila_ele);
+  }
+
   std::vector<std::vector<cv::Point>> contours;
   cv::findContours(threshold, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
@@ -61,14 +68,11 @@ db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
     if (minLen < 3)
       continue;
 
-    const float angle_threshold =
-        60; // do not expect vertical text, TODO detection algo property
+    const float angle_threshold = 60;
     bool swap_size = false;
-    if (box.size.width <
-        box.size.height) // horizontal-wide text area is expected
+    if (box.size.width < box.size.height)
       swap_size = true;
-    else if (std::fabs(box.angle) >=
-             angle_threshold) // don't work with vertical rectangles
+    else if (std::fabs(box.angle) >= angle_threshold)
       swap_size = true;
 
     if (swap_size) {

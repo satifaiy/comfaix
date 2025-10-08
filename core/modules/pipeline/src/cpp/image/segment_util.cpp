@@ -31,10 +31,12 @@ cv::Mat crop(const cv::Mat &src, const std::vector<cv::Point2f> &points,
 
   if (modifer.has_value()) {
     auto box = cv::minAreaRect(points);
-    box.center.x -= bbox.x;
-    box.center.y -= bbox.y;
-    auto fn = modifer.value();
-    cropped = fn(cropped, points, box);
+    if (-90 < box.angle && box.angle < 90 && box.angle != 0) {
+      box.center.x -= bbox.x;
+      box.center.y -= bbox.y;
+      auto fn = modifer.value();
+      cropped = fn(cropped, points, box);
+    }
   }
 
   // remove any unecessary surrounding the polygon target content
@@ -74,14 +76,8 @@ Cropper create_cropper(const cv::Mat &m,
 // 90 degree.
 cv::Mat align_horizontal(cv::Mat &src, const std::vector<cv::Point2f> &points,
                          const cv::RotatedRect &rotated) {
-  float angle = rotated.angle;
-  cv::Size2f box_size = rotated.size;
-  if (box_size.width < box_size.height) {
-    angle += 90.0f;
-    std::swap(box_size.width, box_size.height);
-  }
   cv::Mat m;
-  cv::Mat rot_mat = cv::getRotationMatrix2D(rotated.center, angle, 1.0);
+  cv::Mat rot_mat = cv::getRotationMatrix2D(rotated.center, rotated.angle, 1.0);
   cv::warpAffine(src, m, rot_mat, src.size(), cv::INTER_CUBIC);
   return m;
 }

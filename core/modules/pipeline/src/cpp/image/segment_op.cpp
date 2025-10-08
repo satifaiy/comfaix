@@ -12,21 +12,23 @@ namespace pipeline::image::op {
 // @brief segmentation using Differentiable Binarization
 std::vector<common::Result<cv::Mat, std::vector<cv::Point2f>>>
 db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
-                const cv::Size2f ratio, const cv::Mat &in_predict) {
+                const cv::Size size, const cv::Size2f ratio,
+                const cv::Mat &in_predict) {
   // if no prediction given then fallback to bitmap
   cv::Mat predict = in_predict;
   if (in_predict.empty()) {
     predict = bitmap;
   }
 
-  cv::Mat threshold;
   if (bitmap.type() != CV_8UC1) {
-    cv::cvtColor(bitmap, threshold, cv::COLOR_BGR2GRAY);
-    OVS_ASSERT(threshold.type() == CV_8UC1, "expect type ", CV_8UC1,
-               " but got ", threshold.type());
+    cv::Mat single_channel;
+    cv::cvtColor(bitmap, single_channel, cv::COLOR_BGR2GRAY);
+    OVS_ASSERT(single_channel.type() == CV_8UC1, "expect type ", CV_8UC1,
+               " but got ", single_channel.type());
+    bitmap = single_channel;
   }
-  cv::threshold(threshold, threshold, config.thresh * 255, 255,
-                cv::THRESH_BINARY);
+  cv::Mat threshold;
+  cv::threshold(bitmap, threshold, config.thresh * 255, 255, cv::THRESH_BINARY);
 
   std::vector<std::vector<cv::Point>> contours;
   cv::findContours(threshold, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
@@ -47,8 +49,7 @@ db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
     std::vector<cv::Point> contourScaled;
     contourScaled.reserve(contour.size());
     for (size_t j = 0; j < contour.size(); j++) {
-      contourScaled.push_back(cv::Point(int(contour[j].x * ratio.width),
-                                        int(contour[j].y * ratio.height)));
+      contourScaled.push_back(cv::Point(int(contour[j].x), int(contour[j].y)));
     }
 
     // Unclip
@@ -88,6 +89,24 @@ db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
     if (polygon.empty())
       continue;
 
+    // adjust unclip path or rectange base on ratio and input size
+    for (int m = 0; m < polygon.size(); m++) {
+      polygon[m].x /= ratio.width;
+      polygon[m].y /= ratio.height;
+
+      polygon[m].x = std::min(std::max(polygon[m].x, 0.0f), size.width - 1.0f);
+      polygon[m].y = std::min(std::max(polygon[m].y, 0.0f), size.height - 1.0f);
+    }
+
+    int rect_width, rect_height;
+    rect_width = int(sqrt(pow(polygon[0].x - polygon[1].x, 2) +
+                          pow(polygon[0].y - polygon[1].y, 2)));
+    rect_height = int(sqrt(pow(polygon[0].x - polygon[3].x, 2) +
+                           pow(polygon[0].y - polygon[3].y, 2)));
+    // skip final rectangle is less than 4
+    if (rect_width <= 4 || rect_height <= 4)
+      continue;
+
     cv::Mat cropped = cropper(polygon);
     results.push_back(common::Result{cropped, polygon, score});
   }
@@ -97,14 +116,14 @@ db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
 // @brief unclip borrowing the same code from opencv
 // TextDetectionModel_DB::unclip
 void unclip(const std::vector<cv::Point2f> &inPoly,
-            std::vector<cv::Point2f> &outPoly, const double unclipRatio) {
-  double area = contourArea(inPoly);
-  double length = arcLength(inPoly, true);
+            std::vector<cv::Point2f> &outPoly, const double unclip_ratio) {
+  double area = cv::contourArea(inPoly);
+  double length = cv::arcLength(inPoly, true);
 
   if (length == 0.)
     return;
 
-  double distance = area * unclipRatio / length;
+  double distance = area * unclip_ratio / length;
 
   size_t numPoints = inPoly.size();
   std::vector<std::vector<cv::Point2f>> newLines;

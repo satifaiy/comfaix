@@ -28,12 +28,12 @@ struct DBNetConfig {
   double unclip_ratio;
 };
 
-
 // @brief segmentation using Differentiable Binarization
 // @param bitmap must be an BGR color order or a grayscale.
 std::vector<common::Result<cv::Mat, std::vector<cv::Point2f>>>
 db_segmentation(cv::Mat &bitmap, Cropper cropper, const DBNetConfig &config,
-                const cv::Size2f ratio, const cv::Mat &in_predict = {});
+                const cv::Size size, const cv::Size2f ratio,
+                const cv::Mat &in_predict = {});
 
 // @brief transform points by unclip
 void unclip(const std::vector<cv::Point2f> &inPoly,

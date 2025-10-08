@@ -10,7 +10,6 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/quality/qualityssim.hpp>
 #include <sstream>
-#include <vector>
 
 #include "pipeline/image/resize_op.hpp"
 #include "pipeline/image/segment_op.hpp"
@@ -20,7 +19,8 @@ namespace img = pipeline::image::op;
 TEST(TestSegmenting, TestSameSizeDBSegment) {
   cv::Mat m = cv::imread("image/data/binary.png");
   auto cropper = img::create_cropper(m, img::align_horizontal);
-  auto result = img::db_segmentation(m, cropper, {0.3, 1000, 0.6, 1.0}, {1, 1});
+  auto result =
+      img::db_segmentation(m, cropper, {0.3, 1000, 0.6, 1.0}, m.size(), {1, 1});
   ASSERT_EQ(result.size(), 6);
   std::stringstream ss;
   for (int i = 0; i < result.size(); i++) {
@@ -46,8 +46,8 @@ TEST(TestSegmenting, TestScaleSizeDBSegment) {
   cv::Size2f ratio;
   cv::Mat resized = img::resize_n_mutiply(m, {}, cv::Size(32, 32), ratio,
                                           cv::InterpolationFlags::INTER_LINEAR);
-  auto result =
-      img::db_segmentation(resized, cropper, {0.3, 1000, 0.6, 1.0}, ratio);
+  auto result = img::db_segmentation(resized, cropper, {0.3, 1000, 0.6, 1.0},
+                                     m.size(), ratio);
   ASSERT_EQ(result.size(), 6);
   std::stringstream ss;
   for (int i = 0; i < result.size(); i++) {
@@ -73,12 +73,11 @@ TEST(TestSegmenting, TestScaleSizeDBSegment) {
     cv::Rect roi1(x1, y1, min_width, min_height);
     cv::Rect roi2(x2, y2, min_width, min_height);
 
-    cv::Mat ssim_map;
-    cv::Scalar ssim_score =
-        cv::quality::QualitySSIM::compute(segment(roi1), exp(roi2), ssim_map);
+    cv::Scalar ssim_score = cv::quality::QualitySSIM::compute(
+        segment(roi1), exp(roi2), cv::noArray());
 
-    ASSERT_GT(ssim_score[0], 0.85);
-    ASSERT_GT(ssim_score[1], 0.85);
-    ASSERT_GT(ssim_score[2], 0.85);
+    ASSERT_GT(ssim_score[0], 0.90);
+    ASSERT_GT(ssim_score[1], 0.90);
+    ASSERT_GT(ssim_score[2], 0.90);
   }
 }

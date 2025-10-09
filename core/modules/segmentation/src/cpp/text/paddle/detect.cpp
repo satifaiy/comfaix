@@ -25,7 +25,7 @@ Detection::Detection(std::string path, std::string device)
 // @brief create Detect with the given model config and device.
 // @param detect model configuration
 // @param device is the openvino backend
-Detection::Detection(const DetectConfig config) : config(config) {
+Detection::Detection(const DetectConfig &config) : config(config) {
   ov::Core core;
   this->model = core.read_model(config.model_path);
   // std::shared_ptr<ov::Model> model;
@@ -33,8 +33,11 @@ Detection::Detection(const DetectConfig config) : config(config) {
   this->infer_request = this->compiled_model.create_infer_request();
 }
 
+// Detection::~Detection() {}
+
 // @brief implement ISegementation.
-std::vector<common::ImageSegmentResult> Detection::segment(const cv::Mat &m) {
+std::vector<common::ImageSegmentionResult>
+Detection::segment(const cv::Mat &m) {
   cv::Size2f ratio;
   const auto input_tensor =
       detect_pre_processing(m, this->compiled_model, ratio, this->config);
@@ -79,11 +82,6 @@ std::vector<common::ImageSegmentResult> Detection::segment(const cv::Mat &m) {
     int hn = (int)std::round(std::abs(src.cols * sin_theta) +
                              std::abs(src.rows * cos_theta));
 
-    // int gg = hn;
-    // if (src.cols < src.rows) {
-    //     gg /= 2;
-    // }
-
     rot_mat.at<double>(0, 2) += (wn / 2.0f) - center.x;
     rot_mat.at<double>(1, 2) += (hn / 2.0f) - center.y;
     cv::warpAffine(src, m, rot_mat, cv::Size(wn, hn), cv::INTER_CUBIC);
@@ -124,30 +122,30 @@ ov::Tensor Detection::detect_pre_processing(const cv::Mat &m,
 // To have procise location, use segmentation::GridVisualization which layout
 // the exact location of the detected text on the image. It's also providing
 // support for both column and row span.
-void Detection::sort_results(std::vector<common::ImageSegmentResult> &results,
-                             float tolerance) {
-  std::unordered_map<common::ImageSegmentResult *, cv::Rect> cache_boxes;
-  std::sort(
-      results.begin(), results.end(),
-      [&cache_boxes, tolerance](const common::ImageSegmentResult &a,
-                                const common::ImageSegmentResult &b) -> bool {
-        auto aptr = const_cast<common::ImageSegmentResult *>(&a);
-        auto bptr = const_cast<common::ImageSegmentResult *>(&b);
-        cv::Rect box1, box2;
-        if (cache_boxes.contains(aptr)) {
-          box1 = cache_boxes[aptr];
-        } else {
-          box1 = cv::boundingRect(a.roi);
-          cache_boxes[aptr] = box1;
-        }
-        if (cache_boxes.contains(bptr)) {
-          box2 = cache_boxes[bptr];
-        } else {
-          box2 = cv::boundingRect(b.roi);
-          cache_boxes[bptr] = box2;
-        }
-        return compare_result(box1, box2, tolerance);
-      });
+void Detection::sort_results(
+    std::vector<common::ImageSegmentionResult> &results, float tolerance) {
+  std::unordered_map<common::ImageSegmentionResult *, cv::Rect> cache_boxes;
+  std::sort(results.begin(), results.end(),
+            [&cache_boxes,
+             tolerance](const common::ImageSegmentionResult &a,
+                        const common::ImageSegmentionResult &b) -> bool {
+              auto aptr = const_cast<common::ImageSegmentionResult *>(&a);
+              auto bptr = const_cast<common::ImageSegmentionResult *>(&b);
+              cv::Rect box1, box2;
+              if (cache_boxes.contains(aptr)) {
+                box1 = cache_boxes[aptr];
+              } else {
+                box1 = cv::boundingRect(a.roi);
+                cache_boxes[aptr] = box1;
+              }
+              if (cache_boxes.contains(bptr)) {
+                box2 = cache_boxes[bptr];
+              } else {
+                box2 = cv::boundingRect(b.roi);
+                cache_boxes[bptr] = box2;
+              }
+              return compare_result(box1, box2, tolerance);
+            });
 }
 
 // &brief compare 2 rectangle

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <vector>
@@ -11,7 +13,7 @@ namespace segmentation {
 // @brief abstraction class that provide method to segment the image.
 template <typename S, typename R> class ISegmentation {
 public:
-  ~ISegmentation() = default;
+  virtual ~ISegmentation() = default;
 
   // @brief segmenting the image and set the result in result argument.
   virtual std::vector<common::Result<S, R>> segment(const cv::Mat &m) = 0;

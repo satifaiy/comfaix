@@ -21,10 +21,10 @@ public:
   // @brief create Detect with the given model config and device.
   // @param detect model configuration
   // @param device is the openvino backend
-  Detection(const DetectConfig config);
+  Detection(const DetectConfig &config);
 
   // @brief implement ISegementation.
-  std::vector<common::ImageSegmentResult> segment(const cv::Mat &m) override;
+  std::vector<common::ImageSegmentionResult> segment(const cv::Mat &m) override;
 
   // @brief provide simple consistent sort order.
   // @detail the sort is group by rows and then by columns. If the segment is a
@@ -32,7 +32,7 @@ public:
   // To have procise location, use segmentation::GridVisualization which layout
   // the exact location of the detected text on the image. It's also providing
   // support for both column and row span.
-  static void sort_results(std::vector<common::ImageSegmentResult> &results,
+  static void sort_results(std::vector<common::ImageSegmentionResult> &results,
                            float tolerance = 0);
 
 private:

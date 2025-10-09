@@ -8,7 +8,7 @@ add_library(${TARGET} INTERFACE)
 set(COMFAIX_MODULES
     pipeline
     segmentation
-    # ocr
+    ocr
 )
 
 # update core variable

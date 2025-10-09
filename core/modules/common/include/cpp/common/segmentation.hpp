@@ -18,7 +18,10 @@ template <typename S, typename R> struct Result {
 };
 
 // @brief an image segmentation result
-using ImageSegmentResult = common::Result<cv::Mat, std::vector<cv::Point2f>>;
+using ImageSegmentionResult = common::Result<cv::Mat, std::vector<cv::Point2f>>;
+
+// @brief a text recognition result
+using TextRecognitionResult = common::Result<std::string, std::vector<cv::Point2f>>;
 
 // @brief abstraction class provide common method to segment an input.
 template <typename S, typename R> class Segmentation {

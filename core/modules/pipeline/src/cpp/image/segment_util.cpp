@@ -76,9 +76,24 @@ Cropper create_cropper(const cv::Mat &m,
 // 90 degree.
 cv::Mat align_horizontal(cv::Mat &src, const std::vector<cv::Point2f> &points,
                          const cv::RotatedRect &rotated) {
+  float angle = rotated.angle;
+  auto size = src.size();
+  auto center = rotated.center;
+  if (angle > 45)
+    angle -= 90;
+
   cv::Mat m;
-  cv::Mat rot_mat = cv::getRotationMatrix2D(rotated.center, rotated.angle, 1.0);
-  cv::warpAffine(src, m, rot_mat, src.size(), cv::INTER_CUBIC);
+  cv::Mat rot_mat = cv::getRotationMatrix2D(center, angle, 1.0);
+  double cos_theta = rot_mat.at<double>(0, 0);
+  double sin_theta = rot_mat.at<double>(0, 1);
+  int wn = (int)std::round(std::abs(src.cols * cos_theta) +
+                           std::abs(src.rows * sin_theta));
+  int hn = (int)std::round(std::abs(src.cols * sin_theta) +
+                           std::abs(src.rows * cos_theta));
+
+  rot_mat.at<double>(0, 2) += (wn / 2.0f) - center.x;
+  rot_mat.at<double>(1, 2) += (hn / 2.0f) - center.y;
+  cv::warpAffine(src, m, rot_mat, cv::Size(wn, hn), cv::INTER_CUBIC);
   return m;
 }
 

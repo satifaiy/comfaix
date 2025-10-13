@@ -29,7 +29,6 @@ Records RecognizePreProcessing::batch_initialize(
     this->records.size.width =
         std::max(resized_width, this->records.size.width);
   }
-  std::cout << "count: " << count << std::endl;
   ov::Shape shape = {size_t(count), 3, size_t(this->records.size.height),
                      size_t(this->records.size.width)};
   this->records.tensor = ov::Tensor(ov::element::f32, shape);

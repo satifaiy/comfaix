@@ -79,7 +79,12 @@ foreach(MODULE IN LISTS COMFAIX_MODULES)
 endforeach()
 
 add_library(${TARGET} SHARED ${OBJECTS})
+
 target_link_libraries(${TARGET} PUBLIC
     ${OBJECTS_DEPS}
     TBB::tbb
+)
+
+set_target_properties(${TARGET} PROPERTIES
+    DEFINE_SYMBOL COMFAIXAPI_EXPORTS
 )

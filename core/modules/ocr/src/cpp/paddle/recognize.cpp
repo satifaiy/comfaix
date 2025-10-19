@@ -26,7 +26,6 @@ Recognize::Recognize(const RecognizeConfig &config,
             std::make_unique<RecognizePreProcessing>(config)) {
   ov::Core core;
   this->model = core.read_model(config.model_path);
-  // std::shared_ptr<ov::Model> model;
   this->compiled_model = core.compile_model(this->model, config.device);
   this->infer_request = this->compiled_model.create_infer_request();
 }

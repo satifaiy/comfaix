@@ -11,6 +11,12 @@ set(TARGET ${PROJECT_NAME})
 add_library(${TARGET} OBJECT
     src/cpp/text/paddle/config.cpp
     src/cpp/text/paddle/detect.cpp
+    src/cpp/image/classic/detection.cpp
+    src/cpp/image/classic/query.cpp
+    src/cpp/image/classic/edge.cpp
+    src/cpp/image/classic/edge_dexined.cpp
+    src/cpp/image/classic/edge_teed.cpp
+    src/cpp/image/classic/embed.cpp
 )
 
 target_link_libraries(${TARGET} PUBLIC
@@ -18,6 +24,7 @@ target_link_libraries(${TARGET} PUBLIC
     openvino::runtime
     pipeline
     simdjson
+    Clipper2
 )
 
 add_library(${TARGET}_interface INTERFACE)
@@ -27,6 +34,7 @@ target_link_libraries(${TARGET}_interface INTERFACE
     openvino::runtime
     pipeline
     simdjson
+    Clipper2
 )
 
 target_include_directories(${TARGET} PUBLIC

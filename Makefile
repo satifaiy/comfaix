@@ -4,11 +4,15 @@
 MODELS_PADDLE := PaddlePaddle/PP-OCRv5_mobile_det \
 		  		 PaddlePaddle/en_PP-OCRv5_mobile_rec
 
+MODELS_EFFICIENT_SAM := yunyangx/EfficientSAM
+
+MODELS_VIT := onnx-community/dinov2-small
+
 # use for conversion
 PADDLE_2_ONNX := $(addsuffix .paddle,$(MODELS_PADDLE))
 
 # all models that needed to download
-MODELS := ${MODELS_PADDLE}
+MODELS := ${MODELS_PADDLE} ${MODELS_EFFICIENT_SAM} ${MODELS_VIT}
 
 DOWNLOAD_MODELS := $(addsuffix .model,$(MODELS))
 
@@ -46,4 +50,16 @@ build-debug:
 		-DBUILD_SHARED_LIBS=ON \
 		-DCMAKE_BUILD_TYPE=Debug && \
 	cmake --build build/debug && \
-	TBB_ENABLE_SANITIZERS=1 ctest -VV --output-on-failure --test-dir build/debug
+	TBB_ENABLE_SANITIZERS=1 ctest \
+		-VV \
+		--rerun-failed \
+	    --output-on-failure --test-dir build/debug
+
+.PHONY: build-release
+build-release:
+	cd core && \
+	cmake --fresh -S . -B build/release --log-level=TRACE \
+	    -DBUILD_SINGLE_PKG=ON \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_BUILD_TYPE=Release && \
+	cmake --build build/release

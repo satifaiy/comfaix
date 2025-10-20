@@ -7,6 +7,8 @@ set(TARGET ${PROJECT_NAME})
 add_executable(${TARGET}
     text/paddle/detection_test.cpp
     image/classic/edge_detection_test.cpp
+    image/deeplearning/sam_test.cpp
+    image/deeplearning/vit_test.cpp
 )
 
 # Link the test executable to the library and Google Test

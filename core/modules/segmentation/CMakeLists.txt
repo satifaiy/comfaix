@@ -17,6 +17,9 @@ add_library(${TARGET} OBJECT
     src/cpp/image/classic/edge_dexined.cpp
     src/cpp/image/classic/edge_teed.cpp
     src/cpp/image/classic/embed.cpp
+    src/cpp/image/deeplearning/sam.cpp
+    src/cpp/image/deeplearning/vit.cpp
+    src/cpp/image/deeplearning/dino_v2.cpp
 )
 
 target_link_libraries(${TARGET} PUBLIC
